@@ -1,0 +1,25 @@
+name: Generate Secret Token
+
+on: 
+  workflow_dispatch:  # Manual trigger only
+    inputs:
+      confirm:
+        description: 'Type "yes" to confirm you want to generate a new token'
+        required: true
+
+jobs:
+  generate-token:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'yes'  # Only runs if explicitly confirmed
+    steps:
+      - name: Generate Token
+        id: generate
+        run: |
+          TOKEN=$(python3 -c "from secrets import token_urlsafe; print(token_urlsafe(32))")
+          echo "Generated token: $TOKEN"
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+      
+      - name: Output Token
+        run: |
+          echo "Your FLASK_SECRET_KEY:"
+          echo "${{ env.TOKEN }}"
