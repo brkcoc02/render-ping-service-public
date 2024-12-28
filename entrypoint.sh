@@ -11,7 +11,7 @@ echo "Activating virtual environment..."
 echo "Virtual environment activated. Starting Flask application..."
 
 # Run the Flask application
-python ping_service.py
+python /app/services/ping_service.py
 
 # Log the completion of the script
 echo "Entrypoint script completed."
