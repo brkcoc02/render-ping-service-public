@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render Ping Service</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="auth-overlay" id="authOverlay"></div>
+    <div class="login-form" id="loginForm">
+      <h2>Login Required</h2>
+      <div class="error" id="loginError"></div>
+      <input type="text" id="username" placeholder="Username" autocomplete="username" />
+      <input type="password" id="password" placeholder="Passphrase" autocomplete="current-password" />
+      <button id="loginButton" onclick="login()">Login</button>
+    </div>
+    <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
+    <div id="notification" class="notification"></div>
+    <div class="clock">
+        <div id="date"></div>
+        <div id="time"></div>
+    </div>
+    <h1>Render Ping Service</h1>
+
+    <!-- Manual Ping Buttons -->
+    <div class="button-container">
+        <button class="ping-button url-a" onclick="manualPing(0)">URL A</button>
+        <button class="ping-button url-b" onclick="manualPing(1)">URL B</button>
+        <button class="ping-button url-c" onclick="manualPing(2)">URL C</button>
+        <button class="ping-button ping-all" onclick="pingAll()">Ping All</button>
+        <button class="ping-button next-ping" disabled id="next-ping-button">Next Ping: --:--</button>
+    </div>
+
+    <!-- Statistics Dashboard -->
+    <div class="stats-container">
+        <h2>Service Statistics</h2>
+        <div class="stat-cards">
+            <div class="stat-card">
+                <h3>Average Response Time</h3>
+                <div id="avg-response-time" class="stat-value">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Uptime</h3>
+                <div id="total-uptime" class="stat-value">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>24h Incidents</h3>
+                <div id="incident-count" class="stat-value">-</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Status Tables -->
+    <div class="container">
+        <table id="table1">
+            <thead>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th>URL</th>
+                    <th>Ping Time</th>
+                    <th>Response Time</th>
+                    <th>Status Code</th>
+                    <th>Status</th>
+                    <th>Uptime</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <table id="table2">
+            <thead>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th>URL</th>
+                    <th>Ping Time</th>
+                    <th>Response Time</th>
+                    <th>Status Code</th>
+                    <th>Status</th>
+                    <th>Uptime</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <table id="table3">
+            <thead>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th>URL</th>
+                    <th>Ping Time</th>
+                    <th>Response Time</th>
+                    <th>Status Code</th>
+                    <th>Status</th>
+                    <th>Uptime</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
