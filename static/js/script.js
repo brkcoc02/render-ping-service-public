@@ -11,6 +11,17 @@ const TARGET_URLS = [
     "https://jsonplaceholder.typicode.com/posts",
 ];
 
+// Configuration constants
+const CONSTANTS = {
+    RETRY_TIMEOUT: 15000,
+    MAX_RETRY_TIMEOUT: 60000,
+    INITIAL_DELAY: 5000,
+    NOTIFICATION_DURATION: 5000,
+    MANUAL_PING_ERROR_DURATION: 2000,
+    RATE_LIMIT_WAIT: 5000,
+    UPDATE_DELAY: 1500
+};
+
 // Helper function for creating table rows
 function createTableRow(ping, index) {
     const statusClass = ping.status === 'Success' ? 'success' : 'failure';
@@ -157,7 +168,7 @@ function updateClock() {
 // Background check for scheduled pings
 let lastScheduledCheck = false;
 let isCheckingPing = false;  // Add a lock to prevent concurrent checks
-let retryTimeout = 15000;    // Default retry timeout
+let retryTimeout = CONSTANTS.RETRY_TIMEOUT;    // Default retry timeout
 
 async function checkScheduledPing() {
     if (isCheckingPing) return;  // If already checking, skip
@@ -191,13 +202,15 @@ async function checkScheduledPing() {
 
 // Timer System: Manages countdown display and updates for scheduled pings
 function startCountdownTimer() {
-    setInterval(() => {
+    const timerInterval = window.setInterval(() => {
         if (nextScheduledPingTime) {
             const now = Date.now();
             const remainingTime = Math.max(0, Math.ceil((nextScheduledPingTime - now) / 1000));
             updateNextPingDisplay(remainingTime);
         }
     }, 1000);
+    // Store interval ID for cleanup if needed
+    window.countdownTimerInterval = timerInterval;
 }
 
 function updateNextPingDisplay(remainingTime) {
@@ -217,9 +230,11 @@ function startPingChecks() {
     setTimeout(async () => {
         await checkScheduledPing();
         // Start recurring checks
-        const checkInterval = setInterval(async () => {
+        const checkInterval = window.setInterval(async () => {
             await checkScheduledPing();
         }, retryTimeout);
+        // Store interval ID for cleanup if needed
+        window.pingCheckInterval = checkInterval;
     }, 5000);  // Initial 5-second delay
 }
 
@@ -337,6 +352,9 @@ function handleAuthError(response) {
 async function updatePageData() {
     try {
         const historyResponse = await fetch('/api/ping-history', {
+            if (!historyResponse.ok && historyResponse.status !== 401) {
+                throw new Error(`HTTP error! status: ${historyResponse.status}`);
+            }
         });
         await handleAuthError(historyResponse);
         const historyData = await historyResponse.json();
