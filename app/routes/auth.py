@@ -7,7 +7,11 @@ def login():
     """Handle login requests and set secure session cookie."""
     # Show login form for GET requests
     if request.method == 'GET':
-        return redirect(url_for('main.serve_index'))
+        # Check if already authenticated
+        if request.cookies.get('session'):
+            return redirect(url_for('main.serve_index'))
+        # If not authenticated, show the login form page directly
+        return make_response(jsonify({'error': 'Authentication required'}), 401)
 
     # Handle both JSON and form data for POST requests
     if request.is_json:
