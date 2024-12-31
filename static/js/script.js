@@ -261,19 +261,22 @@ function checkAuth() {
     // Make a test request to check auth status
     return fetch('/api/ping-history')
     .then(response => {
-        if (response.ok) {
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('logoutBtn').style.display = 'block';
-            return true;
-        } else {
+        if (response.status === 401) {
+            // Show login form for unauthenticated users
             document.getElementById('authOverlay').style.display = 'block';
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('logoutBtn').style.display = 'none';
             return false;
+        } else if (response.ok) {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+            return true;
         }
+        throw new Error(`Unexpected response: ${response.status}`);
     })
     .catch(() => {
+        console.error('Auth check error:', error);
         document.getElementById('authOverlay').style.display = 'block';
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'none';
@@ -308,13 +311,14 @@ function login() {
             password: password
         })
     }).then(response => {
+        if (response.status === 401) {
+            throw new Error('Invalid credentials');
+        }
         if (response.ok) {
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
             updatePageData();
-        } else {
-            throw new Error('Invalid credentials');
         }
     }).catch(error => {
         errorDiv.textContent = error.message || 'Login failed';
@@ -356,7 +360,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Add error handler for 401 responses
 function handleAuthError(response) {
     if (response.status === 401) {
-        checkAuth();
+        // Show login form without redirecting
+        document.getElementById('authOverlay').style.display = 'block';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('logoutBtn').style.display = 'none';
         throw new Error('Session expired. Please login again.');
     }
     return response;
