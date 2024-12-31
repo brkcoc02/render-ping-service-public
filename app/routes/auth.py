@@ -5,8 +5,8 @@ from app.utils.auth import check_auth, generate_session_token, requires_auth
 @auth_bp.route('/login', methods=['POST'])
 def login():
     """Handle login requests and set secure session cookie."""
-    auth = request.authorization
-    if auth and check_auth(auth.username, auth.password):
+    data = request.get_json()
+    if data and check_auth(data.get('username'), data.get('password')):
         resp = make_response(jsonify({'status': 'success'}))
         resp.set_cookie(
             'session',
@@ -30,9 +30,6 @@ def logout():
     return resp
 
 def unauthorized():
-    """Send a 401 response that enables basic auth."""
-    return Response(
-        'Could not verify your access level for that URL.\n'
-        'You have to login with proper credentials', 401,
-        {'WWW-Authenticate': 'Basic realm="Login Required"'}
-    )
+    """Send a 401 response without triggering browser's basic auth."""
+    return jsonify({'error': 'Authentication required'}), 401
+    
