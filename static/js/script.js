@@ -275,7 +275,7 @@ function checkAuth() {
         }
         throw new Error(`Unexpected response: ${response.status}`);
     })
-    .catch(() => {
+    .catch((error) => {
         console.error('Auth check error:', error);
         document.getElementById('authOverlay').style.display = 'block';
         document.getElementById('loginForm').style.display = 'block';
@@ -318,8 +318,9 @@ function login() {
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
-            updatePageData();
-        }
+            initializeTargetUrls().then(() => {
+                updatePageData();
+            });
     }).catch(error => {
         errorDiv.textContent = error.message || 'Login failed';
         errorDiv.style.display = 'block';
@@ -335,12 +336,24 @@ function logout() {
         method: 'POST'
     }).then(response => {
         if (response.ok) {
+            TARGET_URLS = [];  // Clear the URLs
             document.getElementById('authOverlay').style.display = 'block';
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('logoutBtn').style.display = 'none';
+            // Clear all tables
+            for (let i = 1; i <= 3; i++) {
+                const table = document.getElementById(`table${i}`);
+                if (table) {
+                    const tbody = table.querySelector('tbody');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                    }
+                }
+            }
         }
     }).catch(error => {
         console.error('Logout failed:', error);
+        showNotification('Logout failed. Please try again.');
     });
 }
 
@@ -353,8 +366,10 @@ document.getElementById('password').addEventListener('keypress', function(e) {
 
 // Initialize app on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    await initializeTargetUrls();
-    checkAuth();
+    const isAuthenticated = await checkAuth();
+    if (isAuthenticated) {
+        await initializeTargetUrls();
+    }
 });
 
 // Add error handler for 401 responses
