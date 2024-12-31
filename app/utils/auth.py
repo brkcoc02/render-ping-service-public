@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, Response, jsonify
+from flask import request, Response, jsonify, redirect, url_for
 from secrets import token_urlsafe
 from config import Config
 
@@ -22,10 +22,6 @@ def requires_auth(f):
         if request.cookies.get('session'):
             return f(*args, **kwargs)
 
-        # If no valid session, return unauthorized
-        return unauthorized()
+        # If no valid session, redirect to login instead of returning JSON
+        return redirect(url_for('auth.login'))
     return decorated
-
-def unauthorized():
-    """Send a 401 response without triggering browser's basic auth."""
-    return jsonify({'error': 'Authentication required'}), 401
