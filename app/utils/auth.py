@@ -22,10 +22,10 @@ def requires_auth(f):
         if request.cookies.get('session'):
             return f(*args, **kwargs)
 
-        # Check if request wants JSON
-        if request.is_json or request.headers.get('Accept') == 'application/json':
+        # Check if request is for API endpoint
+        if request.path.startswith('/api/') or request.path == '/check-scheduled-ping':
             return jsonify({'error': 'Authentication required'}), 401
 
         # For HTML requests, redirect to login page
-        return redirect(url_for('auth.login'))
+        return render_template('index.html')
     return decorated
