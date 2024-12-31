@@ -245,15 +245,17 @@ function login() {
     loginButton.textContent = 'Logging in...';
     errorDiv.style.display = 'none';
 
-    const auth = btoa(username + ':' + password);
-
-    fetch('/', {
+    fetch('/login', {
+        method: 'POST',
         headers: {
-            'Authorization': 'Basic ' + auth
-        }
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
     }).then(response => {
         if (response.ok) {
-            localStorage.setItem('auth', auth);
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
