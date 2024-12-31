@@ -5,12 +5,6 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false;
 };
 
-const TARGET_URLS = [
-    "https://mediaflow-proxy-9g7q.onrender.com",
-    "https://mediaflow-proxy-9g7q.onrender.com/docs",
-    "https://jsonplaceholder.typicode.com/posts",
-];
-
 // Configuration constants
 const CONSTANTS = {
     RETRY_TIMEOUT: 15000,
@@ -21,6 +15,31 @@ const CONSTANTS = {
     RATE_LIMIT_WAIT: 5000,
     UPDATE_DELAY: 1500
 };
+
+// System variables for managing scheduled ping timing and countdown display
+let nextScheduledPingTime = null;  // Stores the next ping timestamp
+let lastScheduledCheck = false;
+let isCheckingPing = false;  // Add a lock to prevent concurrent checks
+let retryTimeout = CONSTANTS.RETRY_TIMEOUT;    // Default retry timeout
+
+// Protected URLs will be fetched from server
+let TARGET_URLS = [];
+
+// Fetch TARGET_URLS from server on initialization
+async function initializeTargetUrls() {
+    try {
+        const response = await fetch('/api/target-urls');
+        await handleAuthError(response);
+        if (!response.ok) {
+            throw new Error('Failed to fetch target URLs');
+        }
+        TARGET_URLS = await response.json();
+        console.log('Target URLs initialized successfully');
+    } catch (error) {
+        console.error('Error initializing target URLs:', error);
+        showNotification('Error initializing application. Please refresh.');
+    }
+}
 
 // Helper function for creating table rows
 function createTableRow(ping, index) {
@@ -37,9 +56,6 @@ function createTableRow(ping, index) {
         <td>${ping.uptime}%</td>
     </tr>`;
 }
-
-// System variables for managing scheduled ping timing and countdown display
-let nextScheduledPingTime = null;  // Stores the next ping timestamp
 
 // Show notification function
 function showNotification(message, duration = 5000) {
@@ -165,18 +181,13 @@ function updateClock() {
     document.getElementById('time').textContent = time;
 }
 
-// Background check for scheduled pings
-let lastScheduledCheck = false;
-let isCheckingPing = false;  // Add a lock to prevent concurrent checks
-let retryTimeout = CONSTANTS.RETRY_TIMEOUT;    // Default retry timeout
-
 async function checkScheduledPing() {
     if (isCheckingPing) return;  // If already checking, skip
     try {
         isCheckingPing = true;  // Set lock
         const { imminent, remainingTime } = await isScheduledPingImminent();
         lastScheduledCheck = imminent;
-        retryTimeout = 15000;  // Reset retry timeout on success
+        retryTimeout = CONSTANTS.RETRY_TIMEOUT;  // Reset retry timeout on success
         
         // Synchronize local timer with server's schedule
         nextScheduledPingTime = Date.now() + (remainingTime * 1000);
@@ -336,8 +347,11 @@ document.getElementById('password').addEventListener('keypress', function(e) {
     }
 });
 
-// Check auth on page load
-document.addEventListener('DOMContentLoaded', checkAuth);
+// Initialize app on page load
+document.addEventListener('DOMContentLoaded', async () => {
+    await initializeTargetUrls();
+    checkAuth();
+});
 
 // Add error handler for 401 responses
 function handleAuthError(response) {
@@ -351,11 +365,10 @@ function handleAuthError(response) {
 // Add the updatePageData function
 async function updatePageData() {
     try {
-        const historyResponse = await fetch('/api/ping-history', {
-            if (!historyResponse.ok && historyResponse.status !== 401) {
-                throw new Error(`HTTP error! status: ${historyResponse.status}`);
-            }
-        });
+        const historyResponse = await fetch('/api/ping-history');
+        if (!historyResponse.ok && historyResponse.status !== 401) {
+            throw new Error(`HTTP error! status: ${historyResponse.status}`);
+        }
         await handleAuthError(historyResponse);
         const historyData = await historyResponse.json();
 
