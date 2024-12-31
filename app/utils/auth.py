@@ -14,10 +14,16 @@ def check_auth(username, password):
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        # Handle HEAD requests first
+        if request.method == 'HEAD':
+            return '', 200
+            
         # First check for session cookie
         if request.cookies.get('session'):
             return f(*args, **kwargs)
-            return unauthorized()
+
+         # If no valid session, return unauthorized
+         return unauthorized()
     return decorated
 
 def unauthorized():
