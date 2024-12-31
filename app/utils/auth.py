@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, Response, jsonify, redirect, url_for
+from flask import request, Response, jsonify, redirect, url_for, render_template
 from secrets import token_urlsafe
 from config import Config
 
@@ -22,6 +22,10 @@ def requires_auth(f):
         if request.cookies.get('session'):
             return f(*args, **kwargs)
 
-        # Return 401 to trigger frontend auth handling
-        return jsonify({'error': 'Authentication required'}), 401
+        # Check if request wants JSON
+        if request.is_json or request.headers.get('Accept') == 'application/json':
+            return jsonify({'error': 'Authentication required'}), 401
+
+        # For HTML requests, redirect to login page
+        return redirect(url_for('auth.login'))
     return decorated
