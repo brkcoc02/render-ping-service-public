@@ -45,9 +45,6 @@ function showNotification(message, duration = 5000) {
 async function isScheduledPingImminent() {
     try {
         const response = await fetch('/check-scheduled-ping', {
-            headers: {
-                'Authorization': 'Basic ' + (localStorage.getItem('auth') || '')
-            }
         });
         await handleAuthError(response);
         const data = await response.json();
@@ -73,9 +70,6 @@ async function manualPing(urlIndex) {
 
     try {
         const response = await fetch(`/ping/${urlIndex}`, {
-            headers: {
-                'Authorization': 'Basic ' + (localStorage.getItem('auth') || '')
-            }
         });
         await handleAuthError(response);
         const data = await response.json();
@@ -192,6 +186,26 @@ async function checkScheduledPing() {
         }
     } finally {
         isCheckingPing = false;  // Release lock
+    }
+}
+
+// Timer System: Manages countdown display and updates for scheduled pings
+function startCountdownTimer() {
+    setInterval(() => {
+        if (nextScheduledPingTime) {
+            const now = Date.now();
+            const remainingTime = Math.max(0, Math.ceil((nextScheduledPingTime - now) / 1000));
+            updateNextPingDisplay(remainingTime);
+        }
+    }, 1000);
+}
+
+function updateNextPingDisplay(remainingTime) {
+    const button = document.getElementById('next-ping-button');
+    if (button) {
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+        button.textContent = `Next Ping: ${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 }
 
@@ -313,9 +327,8 @@ document.addEventListener('DOMContentLoaded', checkAuth);
 // Add error handler for 401 responses
 function handleAuthError(response) {
     if (response.status === 401) {
-        localStorage.removeItem('auth');
         checkAuth();
-        throw new Error('Authentication required');
+        throw new Error('Session expired. Please login again.');
     }
     return response;
 }
@@ -324,9 +337,6 @@ function handleAuthError(response) {
 async function updatePageData() {
     try {
         const historyResponse = await fetch('/api/ping-history', {
-            headers: {
-                'Authorization': 'Basic ' + (localStorage.getItem('auth') || '')
-            }
         });
         await handleAuthError(historyResponse);
         const historyData = await historyResponse.json();
