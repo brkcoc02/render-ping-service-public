@@ -22,8 +22,8 @@ def requires_auth(f):
         if request.cookies.get('session'):
             return f(*args, **kwargs)
 
-         # If no valid session, return unauthorized
-         return unauthorized()
+        # If no valid session, return unauthorized
+        return unauthorized()
     return decorated
 
 def unauthorized():
