@@ -22,6 +22,6 @@ def requires_auth(f):
         if request.cookies.get('session'):
             return f(*args, **kwargs)
 
-        # If no valid session, redirect to login instead of returning JSON
-        return redirect(url_for('auth.login'))
+        # Return 401 to trigger frontend auth handling
+        return jsonify({'error': 'Authentication required'}), 401
     return decorated
