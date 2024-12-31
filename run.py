@@ -1,6 +1,7 @@
 from app import create_app
 from app.services.ping_service import start_pinger
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(
@@ -14,12 +15,14 @@ logging.basicConfig(
 
 app = create_app()
 
+# Start the background pinger thread
+start_pinger()
+
 if __name__ == "__main__":
     try:
-        # Start the background pinger thread
-        start_pinger()
-        # Run the Flask application
-        app.run(host='0.0.0.0', port=8080, debug=False)
+        # Development server
+        port = int(os.environ.get('PORT', 8080))
+        app.run(host='0.0.0.0', port=port, debug=False)
     except KeyboardInterrupt:
         logging.info("Ping Service stopped by user. Exiting...")
         exit(0)
