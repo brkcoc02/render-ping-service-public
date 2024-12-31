@@ -274,8 +274,17 @@ function login() {
 
 // Logout function
 function logout() {
-    localStorage.removeItem('auth');
-    checkAuth();
+    fetch('/logout', {
+        method: 'POST'
+    }).then(response => {
+        if (response.ok) {
+            document.getElementById('authOverlay').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'none';
+        }
+    }).catch(error => {
+        console.error('Logout failed:', error);
+    });
 }
 
 // Handle enter key in login form
