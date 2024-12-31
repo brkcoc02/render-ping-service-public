@@ -218,14 +218,27 @@ updateClock();
 
 // Check if we have credentials
 function checkAuth() {
-    if (!localStorage.getItem('auth')) {
+    // Make a test request to check auth status
+    return fetch('/api/ping-history')
+    .then(response => {
+        if (response.ok) {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+            return true;
+        } else {
+            document.getElementById('authOverlay').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'none';
+            return false;
+        }
+    })
+    .catch(() => {
         document.getElementById('authOverlay').style.display = 'block';
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'none';
         return false;
-    }
-    document.getElementById('logoutBtn').style.display = 'block';
-    return true;
+    });   
 }
 
 // Login function
