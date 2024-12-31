@@ -1,4 +1,4 @@
-from flask import render_template, send_from_directory
+from flask import render_template, send_from_directory, request
 from app.routes import main_bp
 from app.utils.auth import requires_auth
 
