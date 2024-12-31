@@ -11,7 +11,7 @@ def login():
         if request.cookies.get('session'):
             return redirect(url_for('main.serve_index'))
         # If not authenticated, show the login form page directly
-        return make_response(jsonify({'error': 'Authentication required'}), 401)
+        return render_template('login.html')  # Return the login form HTML
 
     # Handle both JSON and form data for POST requests
     if request.is_json:
