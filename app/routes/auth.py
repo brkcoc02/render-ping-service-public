@@ -10,8 +10,8 @@ def login():
         # Check if already authenticated
         if request.cookies.get('session'):
             return redirect(url_for('main.serve_index'))
-        # If not authenticated, show the login form page directly
-        return render_template('login.html')  # Return the login form HTML
+        # If not authenticated, render the login template
+        return render_template('index.html')
 
     # Handle both JSON and form data for POST requests
     if request.is_json:
