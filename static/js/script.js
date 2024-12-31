@@ -1,6 +1,6 @@
 // Global error handler
 window.onerror = function(msg, url, lineNo, columnNo, error) {
-    console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+    console.error('Error: ' + msg + '\\nURL: ' + url + '\\nLine: ' + lineNo + '\\nColumn: ' + columnNo + '\\nError object: ' + JSON.stringify(error));
     showNotification('An error occurred. Please refresh the page if issues persist.');
     return false;
 };
