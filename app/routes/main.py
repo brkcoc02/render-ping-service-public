@@ -12,5 +12,5 @@ def dashboard():
     return render_template('index.html')
 
 @main_bp.route('/favicon.ico')
-def serve_favicon():
+def favicon():
     return send_from_directory('static', 'favicon.ico')
