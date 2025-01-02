@@ -13,4 +13,4 @@ def dashboard():
 
 @main_bp.route('/favicon.ico')
 def favicon():
-    return send_from_directory('static', 'favicon.ico')
+    return send_from_directory('../static', 'favicon.ico', mimetype='image/x-icon')
