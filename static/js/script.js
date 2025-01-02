@@ -389,11 +389,17 @@ function handleAuthError(response) {
 async function updatePageData() {
     try {
         const historyResponse = await fetch('/api/ping-history');
-        if (!historyResponse.ok && historyResponse.status !== 401) {
+        await handleAuthError(historyResponse);
+        
+        if (!historyResponse.ok) {
             throw new Error(`HTTP error! status: ${historyResponse.status}`);
         }
-        await handleAuthError(historyResponse);
-        const historyData = await historyResponse.json();
+
+        let historyData = await historyResponse.json();
+
+        if (!TARGET_URLS.length) {
+            await initializeTargetUrls();
+        }
 
         // Update tables
         for (let i = 1; i <= 3; i++) {
@@ -405,6 +411,8 @@ async function updatePageData() {
                 .map((ping, index) => createTableRow(ping, index + 1))
                 .join('');
             }
+            // Update stats
+            updateStats(historyData);
         }
         // Re-enable buttons
         document.querySelectorAll('.ping-button').forEach(button => {
@@ -415,7 +423,34 @@ async function updatePageData() {
             }
         });
     } catch (error) {
-        console.error('Error updating page data:', error);
-        showNotification('Error updating page data');
+        if (error.message !== 'Session expired. Please login again.') {
+            console.error('Error updating page data:', error);
+            showNotification('Error updating page data');
+        }
     }
 }
+
+// Add function to update stats
+function updateStats(historyData) {
+    try {
+        const avgResponseTime = document.getElementById('avg-response-time');
+        const totalUptime = document.getElementById('total-uptime');
+        const incidentCount = document.getElementById('incident-count');
+
+        let totalTime = 0, totalPings = 0, incidents = 0, uptimeSum = 0;
+
+        Object.values(historyData).forEach(urlData => {
+            urlData.forEach(ping => {
+                totalTime += ping.response_time || 0;
+                totalPings++;
+                uptimeSum += parseFloat(ping.uptime) || 0;
+                if (ping.status === 'Failure') incidents++;
+            });
+        });
+
+        avgResponseTime.textContent = totalPings ? `${Math.round(totalTime/totalPings)}ms` : '-';
+        totalUptime.textContent = totalPings ? `${Math.round(uptimeSum/totalPings)}%` : '-';
+        incidentCount.textContent = incidents;
+    } catch (error) {
+        showNotification('Error updating page data');
+    }
