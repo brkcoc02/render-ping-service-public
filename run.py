@@ -1,5 +1,6 @@
 from app import create_app
-from app.services.ping_service import start_pinger
+from app.app.services.ping_service import start_pinger
+from app.app.routes import configure_routes
 import logging
 import os
 
