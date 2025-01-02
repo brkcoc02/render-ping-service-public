@@ -315,12 +315,13 @@ function login() {
             throw new Error('Invalid credentials');
         }
         if (response.ok) {
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('logoutBtn').style.display = 'block';
-            initializeTargetUrls().then(() => {
-                updatePageData();
-            });
+            // Get Location header for redirect
+            const redirectUrl = response.headers.get('Location') || '/dashboard';
+            window.location.href = redirectUrl;
+            return;
+        }
+        // If we get here, something unexpected happened
+        throw new Error('Login failed');
     }).catch(error => {
         errorDiv.textContent = error.message || 'Login failed';
         errorDiv.style.display = 'block';
