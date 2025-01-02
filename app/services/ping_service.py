@@ -13,8 +13,15 @@ import socket
 SCHEDULED_PING_LOCK = Lock()
 NEXT_SCHEDULED_PING = datetime.now()
 
-def is_valid_url(url):
+def is_valid_url(url: str) -> bool:
     """Validate URL for security."""
+
+    Args:
+    url: The URL string to validate
+
+    Returns:
+        bool: True if URL is valid and safe, False otherwise
+    """
     try:
         result = urlparse(url)
         if not all([result.scheme, result.netloc]):
@@ -33,7 +40,7 @@ def is_valid_url(url):
                 ip.startswith('192.168.') or  # Private network
                 ip == '0.0.0.0' or
                 ip == '255.255.255.255'):
-                    return False
+                return False
             return True
     except Exception:
         return False
@@ -92,7 +99,7 @@ def ping(url, retries=3):
         except requests.exceptions.RequestException as e:
             logging.error(f"Attempt {attempt} failed to ping {url}: {e}")
             if attempt < retries:
-                sleep_time = 2 * attempt
+                sleep_time = min(2 * attempt, 10)  # Cap at 10 seconds
                 logging.info(f"Retrying in {sleep_time} seconds...")
                 time.sleep(sleep_time)
                 continue
@@ -106,10 +113,11 @@ def run_pinger():
     """Background thread function to run scheduled pings."""
     global NEXT_SCHEDULED_PING
     while True:
-        with SCHEDULED_PING_LOCK:
-            logging.info("Starting a new ping cycle...")
-            # Create a safe copy of URLs and validate each
-            urls = [url for url in Config.TARGET_URLS if is_valid_url(url)]
+        try:
+            with SCHEDULED_PING_LOCK:
+                logging.info("Starting a new ping cycle...")
+                # Create a safe copy of URLs and validate each
+                urls = [url for url in Config.TARGET_URLS if is_valid_url(url)]
             random.shuffle(urls)
             
             for url in urls:
