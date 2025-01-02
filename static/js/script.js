@@ -261,7 +261,7 @@ function checkAuth() {
     // Make a test request to check auth status
     return fetch('/api/ping-history')
     .then(response => {
-        if (response.status === 401) {
+        if (response.status === 401 || response.status === 403) {
             // Show login form for unauthenticated users
             document.getElementById('authOverlay').style.display = 'block';
             document.getElementById('loginForm').style.display = 'block';
@@ -280,6 +280,7 @@ function checkAuth() {
         document.getElementById('authOverlay').style.display = 'block';
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'none';
+        console.error('Auth check failed:', error);
         return false;
     });   
 }
