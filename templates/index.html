@@ -9,14 +9,6 @@
 <body>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     
-    <div class="auth-overlay" id="authOverlay"></div>
-    <div class="login-form" id="loginForm">
-      <h2>Login Required</h2>
-      <div class="error" id="loginError"></div>
-      <input type="text" id="username" placeholder="Username" autocomplete="username" />
-      <input type="password" id="password" placeholder="Passphrase" autocomplete="current-password" />
-      <button id="loginButton" onclick="login()">Login</button>
-    </div>
     <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
     <div id="notification" class="notification"></div>
     <div class="clock">
