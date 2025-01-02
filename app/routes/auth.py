@@ -1,6 +1,6 @@
 from flask import jsonify, make_response, request, Response, render_template, redirect, url_for
 from app.routes import auth_bp
-from app.utils.auth import check_auth, generate_session_token, requires_auth
+from app.utils.auth import check_auth, generate_session_token, requires_auth, validate_session_token
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -10,7 +10,7 @@ def login():
         # Check if already authenticated
         session_cookie = request.cookies.get('session')
         if session_cookie and validate_session_token(session_cookie):
-            return redirect(url_for('main.serve_index'))
+            return redirect(url_for('main.dashboard'))
         # If not authenticated, render the login template
         return render_template('index.html')
 
@@ -30,7 +30,7 @@ def login():
         resp = make_response(jsonify({'status': 'success'}))
         resp.set_cookie(
             'session',
-            value=generate_session_token(),
+            value=generate_session_token(username),
             httponly=True,
             secure=True,
             samesite='Strict',
@@ -38,6 +38,7 @@ def login():
             path='/',     # Restrict cookie to root path
             domain=None,  # Restrict to same domain only
         )
+        resp.headers['Location'] = url_for('main.dashboard')
         return resp
     return unauthorized()
 
