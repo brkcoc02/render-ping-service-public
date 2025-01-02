@@ -8,7 +8,8 @@ def login():
     # Show login form for GET requests
     if request.method == 'GET':
         # Check if already authenticated
-        if request.cookies.get('session'):
+        session_cookie = request.cookies.get('session')
+        if session_cookie and validate_session_token(session_cookie):
             return redirect(url_for('main.serve_index'))
         # If not authenticated, render the login template
         return render_template('index.html')
