@@ -4,6 +4,7 @@ import requests
 import logging
 from datetime import datetime, timedelta
 from threading import Thread, Lock
+from typing import Dict, Any, Optional
 from app.models.ping_data import ping_data
 from config import Config
 from urllib.parse import urlparse
@@ -14,10 +15,10 @@ SCHEDULED_PING_LOCK = Lock()
 NEXT_SCHEDULED_PING = datetime.now()
 
 def is_valid_url(url: str) -> bool:
-    """Validate URL for security."""
+    """Validate URL for security.
 
     Args:
-    url: The URL string to validate
+        url: The URL string to validate
 
     Returns:
         bool: True if URL is valid and safe, False otherwise
@@ -45,19 +46,19 @@ def is_valid_url(url: str) -> bool:
     except Exception:
         return False
 
-def get_ist_time():
+def get_ist_time() -> str:
     """Get current time in Indian Standard Time (IST)."""
     utc_time = datetime.utcnow()
     ist_time = utc_time + timedelta(hours=5, minutes=30)
     return ist_time.strftime("%H:%M:%S")
 
-def get_remaining_time():
+def get_remaining_time() -> float:
     """Calculate remaining time until next scheduled ping."""
     now = datetime.now()
     remaining = max(0, (NEXT_SCHEDULED_PING - now).total_seconds())
     return max(0, remaining)
 
-def ping(url, retries=3):
+def ping(url: str, retries: int = 3) -> dict:
     """Pings the given URL and logs the result, with retries."""
     if not is_valid_url(url):
         logging.error(f"Invalid or unsafe URL attempted: {url}")
@@ -109,7 +110,7 @@ def ping(url, retries=3):
             # Sanitize error message to prevent information disclosure
             return {"status": "failure", "response_time": 0, "error": "Request failed"}
 
-def run_pinger():
+def run_pinger() -> None:
     """Background thread function to run scheduled pings."""
     global NEXT_SCHEDULED_PING
     while True:
@@ -118,9 +119,9 @@ def run_pinger():
                 logging.info("Starting a new ping cycle...")
                 # Create a safe copy of URLs and validate each
                 urls = [url for url in Config.TARGET_URLS if is_valid_url(url)]
-            random.shuffle(urls)
+                random.shuffle(urls)
             
-            for url in urls:
+                for url in urls:
                 logging.info(f"Pinging URL: {url}")
                 ping(url)
                 # Use system random for security-sensitive operations
