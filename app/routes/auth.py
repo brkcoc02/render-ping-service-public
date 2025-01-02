@@ -30,7 +30,7 @@ def login():
         resp = make_response(jsonify({'status': 'success'}))
         resp.set_cookie(
             'session',
-            value=generate_session_token(username),
+            value=generate_session_token(),
             httponly=True,
             secure=True,
             samesite='Strict',
