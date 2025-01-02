@@ -4,7 +4,7 @@ from app.utils.auth import requires_auth
 
 @main_bp.route('/', methods=['GET'])
 def index():
-    return redirect(url_for('auth.login'))
+    return render_template('index.html')
 
 @main_bp.route('/dashboard', methods=['GET'])
 @requires_auth
