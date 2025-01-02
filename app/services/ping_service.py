@@ -122,20 +122,20 @@ def run_pinger() -> None:
                 random.shuffle(urls)
             
                 for url in urls:
-                logging.info(f"Pinging URL: {url}")
-                ping(url)
-                # Use system random for security-sensitive operations
-                interval = random.SystemRandom().randint(5, 15)
-                logging.info(f"Sleeping for {interval} seconds before the next ping...")
-                time.sleep(interval)
+                    logging.info(f"Pinging URL: {url}")
+                    ping(url)
+                    # Use system random for security-sensitive operations
+                    interval = random.SystemRandom().randint(5, 15)
+                    logging.info(f"Sleeping for {interval} seconds before the next ping...")
+                    time.sleep(interval)
                 
-            cycle_sleep_time = random.SystemRandom().randint(
-                Config.PING_INTERVAL_MIN, 
-                Config.PING_INTERVAL_MAX
-            )
-            NEXT_SCHEDULED_PING = datetime.now() + timedelta(seconds=cycle_sleep_time)
-            logging.info(f"Completed all pings. Sleeping for {cycle_sleep_time} seconds...")
-            time.sleep(cycle_sleep_time)
+                cycle_sleep_time = random.SystemRandom().randint(
+                    Config.PING_INTERVAL_MIN, 
+                    Config.PING_INTERVAL_MAX
+                )
+                NEXT_SCHEDULED_PING = datetime.now() + timedelta(seconds=cycle_sleep_time)
+                logging.info(f"Completed all pings. Sleeping for {cycle_sleep_time} seconds...")
+                time.sleep(cycle_sleep_time)
 
 # Start the background pinger thread
 def start_pinger():
