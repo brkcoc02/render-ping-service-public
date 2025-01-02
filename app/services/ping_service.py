@@ -136,6 +136,9 @@ def run_pinger() -> None:
                 NEXT_SCHEDULED_PING = datetime.now() + timedelta(seconds=cycle_sleep_time)
                 logging.info(f"Completed all pings. Sleeping for {cycle_sleep_time} seconds...")
                 time.sleep(cycle_sleep_time)
+        except Exception as e:
+            logging.error(f"Error in ping cycle: {str(e)}")
+            time.sleep(60)  # Wait a minute before retrying
 
 # Start the background pinger thread
 def start_pinger():
