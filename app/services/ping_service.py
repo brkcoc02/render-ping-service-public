@@ -5,7 +5,7 @@ import logging
 from datetime import datetime, timedelta
 from threading import Thread, Lock
 from typing import Dict, Any, Optional
-from app.models.ping_data import ping_data
+from ..models.ping_data import ping_data
 from config import Config
 from urllib.parse import urlparse
 import socket
