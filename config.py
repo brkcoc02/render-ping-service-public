@@ -3,11 +3,15 @@ from secrets import token_urlsafe
 
 class Config:
     # Flask configuration
-    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY', token_urlsafe(32))
+    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
+    if not SECRET_KEY:
+        raise RuntimeError('FLASK_SECRET_KEY environment variable must be set')
     
     # Authentication credentials
     USERNAME = os.environ.get('AUTH_USERNAME')
     PASSPHRASE = os.environ.get('AUTH_PASSPHRASE')
+    if not USERNAME or not PASSPHRASE:
+        raise RuntimeError('AUTH_USERNAME and AUTH_PASSPHRASE environment variables must be set')
 
     # URLs to monitor - moved to environment variables
     MEDIAFLOW_URL = os.environ.get('MEDIAFLOW_PROXY_URL')
