@@ -19,7 +19,7 @@ def check_auth(username, password):
     """Check if the username and password match."""
     if not username or not password:
         return False
-        return hmac.compare_digest(username, Config.USERNAME) and hmac.compare_digest(password, Config.PASSPHRASE)
+    return hmac.compare_digest(username, Config.USERNAME) and hmac.compare_digest(password, Config.PASSPHRASE)
 
 def requires_auth(f):
     @wraps(f)
