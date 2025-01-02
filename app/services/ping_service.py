@@ -6,10 +6,37 @@ from datetime import datetime, timedelta
 from threading import Thread, Lock
 from app.models.ping_data import ping_data
 from config import Config
+from urllib.parse import urlparse
+import socket
 
 # Add lock for scheduled ping protection
 SCHEDULED_PING_LOCK = Lock()
 NEXT_SCHEDULED_PING = datetime.now()
+
+def is_valid_url(url):
+    """Validate URL for security."""
+    try:
+        result = urlparse(url)
+        if not all([result.scheme, result.netloc]):
+            return False
+        # Only allow http and https schemes
+        if result.scheme not in ('http', 'https'):
+            return False
+        # Prevent internal network access
+        host = result.hostname
+        if host:
+            ip = socket.gethostbyname(host)
+            ip_parts = ip.split('.')
+            if (ip.startswith('127.') or  # Localhost
+                ip.startswith('10.') or   # Private network
+                ip.startswith('172.16.') or  # Private network
+                ip.startswith('192.168.') or  # Private network
+                ip == '0.0.0.0' or
+                ip == '255.255.255.255'):
+                    return False
+            return True
+        except Exception:
+            return False
 
 def get_ist_time():
     """Get current time in Indian Standard Time (IST)."""
@@ -25,19 +52,31 @@ def get_remaining_time():
 
 def ping(url, retries=3):
     """Pings the given URL and logs the result, with retries."""
+    if not is_valid_url(url):
+        logging.error(f"Invalid or unsafe URL attempted: {url}")
+        return {"status": "failure", "error": "Invalid or unsafe URL"}
+
+    # Enforce maximum retries
+    retries = min(retries, 3)
+    
     for attempt in range(1, retries + 1):
         try:
             start_time = time.time()
             response = requests.get(
                 url, 
                 timeout=(5, 30),
-                headers={'User-Agent': 'Render-Ping-Service/1.0'},
+                headers={
+                    'User-Agent': 'Render-Ping-Service/1.0'},
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Connection': 'close'
                 verify=True,
-                allow_redirects=True
+                allow_redirects=False  # Prevent open redirects
             )
             response_time = round((time.time() - start_time) * 1000)
             
-            status = "Success" if response.status_code == 200 else "Failure"
+            # Consider only 2xx status codes as success
+            status = "Success" if 200 <= response.status_code < 300 else "Failure"
             logging.info(f"Pinged {url}, Status Code: {response.status_code}, Response Time: {response_time}ms")
             
             # Record the ping result
@@ -59,7 +98,8 @@ def ping(url, retries=3):
             
             logging.error(f"All {retries} attempts to ping {url} failed.")
             ping_data.record_ping(url, "Failure", 0, "Error")
-            return {"status": "failure", "response_time": 0, "error": str(e)}
+            # Sanitize error message to prevent information disclosure
+            return {"status": "failure", "response_time": 0, "error": "Request failed"}
 
 def run_pinger():
     """Background thread function to run scheduled pings."""
@@ -67,17 +107,19 @@ def run_pinger():
     while True:
         with SCHEDULED_PING_LOCK:
             logging.info("Starting a new ping cycle...")
-            urls = list(Config.TARGET_URLS)
+            # Create a safe copy of URLs and validate each
+            urls = [url for url in Config.TARGET_URLS if is_valid_url(url)]
             random.shuffle(urls)
             
             for url in urls:
                 logging.info(f"Pinging URL: {url}")
                 ping(url)
-                interval = random.randint(5, 15)
+                # Use system random for security-sensitive operations
+                interval = random.SystemRandom().randint(5, 15)
                 logging.info(f"Sleeping for {interval} seconds before the next ping...")
                 time.sleep(interval)
                 
-            cycle_sleep_time = random.randint(
+            cycle_sleep_time = random.SystemRandom().randint(
                 Config.PING_INTERVAL_MIN, 
                 Config.PING_INTERVAL_MAX
             )
