@@ -455,3 +455,4 @@ function updateStats(historyData) {
     } catch (error) {
         showNotification('Error updating page data');
     }
+}
