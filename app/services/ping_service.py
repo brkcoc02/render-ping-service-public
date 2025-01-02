@@ -35,8 +35,8 @@ def is_valid_url(url):
                 ip == '255.255.255.255'):
                     return False
             return True
-        except Exception:
-            return False
+    except Exception:
+        return False
 
 def get_ist_time():
     """Get current time in Indian Standard Time (IST)."""
@@ -66,10 +66,11 @@ def ping(url, retries=3):
                 url, 
                 timeout=(5, 30),
                 headers={
-                    'User-Agent': 'Render-Ping-Service/1.0'},
+                    'User-Agent': 'Render-Ping-Service/1.0',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9',
                     'Accept-Encoding': 'gzip, deflate',
                     'Connection': 'close'
+                },
                 verify=True,
                 allow_redirects=False  # Prevent open redirects
             )
