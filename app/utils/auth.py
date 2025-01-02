@@ -14,9 +14,6 @@ def check_auth(username, password):
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Handle HEAD requests first
-        if request.method == 'HEAD':
-            return '', 200
             
         # First check for session cookie
         if request.cookies.get('session'):
@@ -25,7 +22,7 @@ def requires_auth(f):
         # Check if request is for API endpoint
         if request.path.startswith('/api/') or request.path == '/check-scheduled-ping':
             return jsonify({'error': 'Authentication required'}), 401
-
-        # For HTML requests, redirect to login page
-        return render_template('index.html')
+        
+        # For HTML requests, force authentication
+        return redirect(url_for('login')), 401
     return decorated
