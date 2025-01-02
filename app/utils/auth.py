@@ -8,12 +8,16 @@ import hmac
 def generate_session_token():
     """Generate a secure random token for session."""
     token = token_urlsafe(32)
+    # Add timestamp to token to enable absolute session expiry validation
+    from time import time
+    timestamp = str(int(time()))
+    token_data = f"{token}.{timestamp}"
     signature = hmac.new(
         current_app.config['SECRET_KEY'].encode(),
-        token.encode(),
+        token_data.encode(),
         hashlib.sha256
     ).hexdigest()
-    return f"{token}.{signature}"
+    return f"{token_data}.{signature}"
 
 def check_auth(username, password):
     """Check if the username and password match."""
@@ -41,13 +45,19 @@ def requires_auth(f):
 def validate_session_token(token):
     """Validate the session token's signature."""
     try:
-        token_part, signature = token.rsplit('.', 1)
+        token_part, timestamp, signature = token.rsplit('.', 2)
+        # Check absolute session expiry (5 minutes)
+        from time import time
+        if int(time()) - int(timestamp) > 300:  # 5 minutes in seconds
+            return False
+
+        token_data = f"{token_part}.{timestamp}"
         expected_signature = hmac.new(
             current_app.config['SECRET_KEY'].encode(),
-            token_part.encode(),
+            token_data.encode(),
             hashlib.sha256
         ).hexdigest()
         return hmac.compare_digest(signature, expected_signature)
-    except (ValueError, AttributeError):
+    except (ValueError, AttributeError, TypeError):
         return False
         
